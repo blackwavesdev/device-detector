@@ -9,6 +9,7 @@ export type DeviceInfo = {
     isDesktop: boolean;
     deviceType: DeviceType;
     userAgent: string;
+    mediaCapabilities?: any;
     os: OS;
     osVersion: string;
     platform: string;

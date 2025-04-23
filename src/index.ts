@@ -30,7 +30,7 @@ export type DeviceInfo = {
   isDesktop: boolean;
   deviceType: DeviceType;
   userAgent: string;
-
+  mediaCapabilities?: any;
   // OS Info
   os: OS;
   osVersion: string;
@@ -306,12 +306,13 @@ export const detectDevice = async (
     typeof window !== "undefined" && typeof navigator !== "undefined";
 
   // Get all browser-specific info
-  const screenInfo = getScreenInfo();
+  const screenInfo = await getScreenInfo();
   const hardwareInfo = getHardwareInfo();
   const networkInfo = getNetworkInfo();
   const mediaCapabilities = isBrowser
     ? await getMediaCapabilities()
     : undefined;
+  // console.log(mediaCapabilities);
 
   return {
     isMobile,
@@ -319,11 +320,11 @@ export const detectDevice = async (
     isDesktop,
     deviceType: isMobile ? "Mobile" : isTablet ? "Tablet" : "Desktop",
     userAgent,
-
+    // screen: screenInfo,
     os,
     osVersion,
     platform: isBrowser ? navigator.platform : "",
-
+    mediaCapabilities,
     browser,
     browserVersion,
     isBrave,
@@ -354,5 +355,5 @@ export const detectDevice = async (
     timezone: isBrowser ? Intl.DateTimeFormat().resolvedOptions().timeZone : "",
   };
 };
-
+detectDevice();
 export default detectDevice;

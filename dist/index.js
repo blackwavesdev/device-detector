@@ -194,21 +194,24 @@ export const detectDevice = async (userAgentString) => {
     // Browser-only features
     const isBrowser = typeof window !== "undefined" && typeof navigator !== "undefined";
     // Get all browser-specific info
-    const screenInfo = getScreenInfo();
+    const screenInfo = await getScreenInfo();
     const hardwareInfo = getHardwareInfo();
     const networkInfo = getNetworkInfo();
     const mediaCapabilities = isBrowser
         ? await getMediaCapabilities()
         : undefined;
+    // console.log(mediaCapabilities);
     return {
         isMobile,
         isTablet,
         isDesktop,
         deviceType: isMobile ? "Mobile" : isTablet ? "Tablet" : "Desktop",
         userAgent,
+        // screen: screenInfo,
         os,
         osVersion,
         platform: isBrowser ? navigator.platform : "",
+        mediaCapabilities,
         browser,
         browserVersion,
         isBrave,
@@ -234,4 +237,5 @@ export const detectDevice = async (userAgentString) => {
         timezone: isBrowser ? Intl.DateTimeFormat().resolvedOptions().timeZone : "",
     };
 };
+detectDevice();
 export default detectDevice;
