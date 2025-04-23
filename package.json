@@ -17,6 +17,10 @@
     "os",
     "detector"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/blackwavesdev/device-detector.git"
+  },
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^22.14.1",
