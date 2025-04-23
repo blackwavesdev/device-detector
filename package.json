@@ -1,0 +1,25 @@
+{
+  "name": "blackwaves-device-detector",
+  "version": "1.0.0",
+  "description": "A simple library to detect device type (mobile, tablet, desktop), operating system, and browser.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "lint": "eslint . --ext .ts"
+  },
+  "author": "blackwaves",
+  "keywords": [
+    "device",
+    "browser",
+    "os",
+    "detector"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "typescript": "^5.8.3"
+  }
+}
