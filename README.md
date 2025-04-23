@@ -7,3 +7,10 @@ A simple library to detect device type (mobile, tablet, desktop), operating syst
 ```bash
 npm install @blackwaves/device-detector
 ```
+
+## [1.0.01] - 23-4-2025
+
+### Fixed
+
+- Fixed ES Modules compatibility issue
+- Improved type definitions
