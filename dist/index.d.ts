@@ -1,15 +1,18 @@
+export type OS = "iOS" | "Android" | "Windows" | "Mac OS" | "Linux" | "Other";
+export type Browser = "Chrome" | "Safari" | "Firefox" | "Edge" | "Opera" | "Other";
+export type DeviceType = "Mobile" | "Tablet" | "Desktop";
 export type DeviceInfo = {
     isMobile: boolean;
     isTablet: boolean;
     isDesktop: boolean;
-    os: "iOS" | "Android" | "Windows" | "Mac OS" | "Linux" | "Other";
+    os: OS;
     osVersion: string;
-    browser: "Chrome" | "Safari" | "Firefox" | "Edge" | "Opera" | "Other";
+    browser: Browser;
     browserVersion: string;
-    deviceType: "Mobile" | "Tablet" | "Desktop";
+    deviceType: DeviceType;
     isTouchScreen: boolean;
     language: string;
     platform: string;
     userAgent: string;
 };
-export declare const detectDevice: () => DeviceInfo;
+export declare const detectDevice: (userAgentString?: string) => DeviceInfo;

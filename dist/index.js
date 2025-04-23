@@ -1,77 +1,93 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.detectDevice = void 0;
-const detectDevice = () => {
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+export const detectDevice = (userAgentString) => {
+    // Allow passing a custom UA string for server-side detection
+    const userAgent = userAgentString ||
+        (typeof navigator !== "undefined"
+            ? navigator.userAgent || navigator.vendor || window.opera
+            : "");
     const ua = userAgent.toLowerCase();
-    const isMobile = /iphone|android.*mobile|windows phone/.test(ua);
-    const isTablet = /ipad|android(?!.*mobile)/.test(ua);
+    // Device type detection
+    const isMobile = /iphone|ipod|android.*mobile|windows phone|blackberry|bb10|iemobile/i.test(ua);
+    const isTablet = /ipad|android(?!.*mobile)|tablet|kindle|silk/i.test(ua);
     const isDesktop = !isMobile && !isTablet;
+    // OS detection
     let os = "Other";
-    if (/windows nt/.test(ua))
+    if (/windows nt|win32|win64/i.test(ua))
         os = "Windows";
-    else if (/macintosh|mac os x/.test(ua))
+    else if (/macintosh|mac os x|mac_powerpc/i.test(ua))
         os = "Mac OS";
-    else if (/android/.test(ua))
+    else if (/android/i.test(ua))
         os = "Android";
-    else if (/iphone|ipad|ipod/.test(ua))
+    else if (/iphone|ipad|ipod/i.test(ua))
         os = "iOS";
-    else if (/linux/.test(ua))
+    else if (/linux/i.test(ua))
         os = "Linux";
+    // Browser detection
     let browser = "Other";
-    if (/chrome|crios/.test(ua) && !/edge|edg/.test(ua))
+    if (/chrome|crios/i.test(ua) && !/edge|edg|opr|opera/i.test(ua))
         browser = "Chrome";
-    else if (/safari/.test(ua) && !/chrome|crios/.test(ua))
+    else if (/safari/i.test(ua) && !/chrome|crios|android/i.test(ua))
         browser = "Safari";
-    else if (/firefox/.test(ua))
+    else if (/firefox|fxios/i.test(ua))
         browser = "Firefox";
-    else if (/edg/.test(ua))
+    else if (/edg|edge|edga|edgios|edg/i.test(ua))
         browser = "Edge";
-    else if (/opera|opr/.test(ua))
+    else if (/opera|opr/i.test(ua))
         browser = "Opera";
+    // OS version extraction
     const getOSVersion = () => {
-        var _a, _b;
-        let match;
-        if (os === "iOS") {
-            match = userAgent.match(/OS (\d+[\._]\d+)?/);
-            return match ? ((_a = match[1]) === null || _a === void 0 ? void 0 : _a.replace("_", ".")) || "" : "";
-        }
-        else if (os === "Android") {
-            match = userAgent.match(/Android\s([0-9\.]+)/);
-            return match ? match[1] : "";
-        }
-        else if (os === "Windows") {
-            match = userAgent.match(/Windows NT ([0-9\.]+)/);
-            return match ? match[1] : "";
-        }
-        else if (os === "Mac OS") {
-            match = userAgent.match(/Mac OS X ([0-9_]+)/);
-            return match ? ((_b = match[1]) === null || _b === void 0 ? void 0 : _b.replace("_", ".")) || "" : "";
+        const versionPatterns = {
+            iOS: /os (\d+[._]\d+(?:[._]\d+)?)/i,
+            Android: /android[ /-](\d+[._]\d+(?:[._]\d+)?)/i,
+            Windows: /windows nt (\d+[._]\d+)/i,
+            "Mac OS": /mac os x (\d+[._]\d+(?:[._]\d+)?)/i,
+            Linux: /(?:linux|ubuntu)[ /](\d+[._]\d+(?:[._]\d+)?)/i,
+            Other: /(?:rv:|version\/)(\d+[._]\d+(?:[._]\d+)?)/i,
+        };
+        const match = userAgent.match(versionPatterns[os]);
+        if (!match)
+            return "";
+        return match[1]?.replace(/_/g, ".") || "";
+    };
+    // Browser version extraction
+    const getBrowserVersion = () => {
+        const versionPatterns = {
+            Chrome: [
+                /chrome\/(\d+[._]\d+[._]\d+[._]\d+)/i,
+                /chrome\/(\d+[._]\d+[._]\d+)/i,
+                /chrome\/(\d+[._]\d+)/i,
+            ],
+            Safari: [/version\/(\d+[._]\d+[._]\d+)/i, /version\/(\d+[._]\d+)/i],
+            Firefox: [/firefox\/(\d+[._]\d+[._]\d+)/i, /firefox\/(\d+[._]\d+)/i],
+            Edge: [/edg?\/(\d+[._]\d+[._]\d+)/i, /edg?\/(\d+[._]\d+)/i],
+            Opera: [/opr\/(\d+[._]\d+[._]\d+)/i, /opera\/(\d+[._]\d+)/i],
+            Other: [/(?:rv:|version\/)(\d+[._]\d+(?:[._]\d+)?)/i],
+        };
+        const patterns = versionPatterns[browser];
+        for (const pattern of patterns) {
+            const match = userAgent.match(pattern);
+            if (match)
+                return match[1]?.replace(/_/g, ".");
         }
         return "";
     };
-    const getBrowserVersion = () => {
-        let match;
-        if (browser === "Chrome") {
-            match = userAgent.match(/Chrome\/([0-9\.]+)/);
-        }
-        else if (browser === "Safari") {
-            match = userAgent.match(/Version\/([0-9\.]+)/);
-        }
-        else if (browser === "Firefox") {
-            match = userAgent.match(/Firefox\/([0-9\.]+)/);
-        }
-        else if (browser === "Edge") {
-            match = userAgent.match(/Edg\/([0-9\.]+)/);
-        }
-        else if (browser === "Opera") {
-            match = userAgent.match(/Opera\/([0-9\.]+)|OPR\/([0-9\.]+)/);
-        }
-        return match ? match[1] || match[2] || "" : "";
+    // Touch screen detection
+    const isTouchScreen = () => {
+        if (typeof window === "undefined")
+            return isMobile || isTablet;
+        return ("ontouchstart" in window ||
+            navigator.maxTouchPoints > 0 ||
+            navigator.msMaxTouchPoints > 0);
     };
-    const isTouchScreen = () => "ontouchstart" in window ||
-        navigator.maxTouchPoints > 0 ||
-        navigator.msMaxTouchPoints > 0;
+    // Language detection
+    const getLanguage = () => {
+        if (typeof navigator === "undefined")
+            return "";
+        return (navigator.language ||
+            navigator.userLanguage ||
+            navigator.browserLanguage ||
+            navigator.systemLanguage ||
+            "");
+    };
     return {
         isMobile,
         isTablet,
@@ -82,9 +98,8 @@ const detectDevice = () => {
         browserVersion: getBrowserVersion(),
         deviceType: isMobile ? "Mobile" : isTablet ? "Tablet" : "Desktop",
         isTouchScreen: isTouchScreen(),
-        language: navigator.language,
-        platform: navigator.platform,
+        language: getLanguage(),
+        platform: typeof navigator !== "undefined" ? navigator.platform : "",
         userAgent,
     };
 };
-exports.detectDevice = detectDevice;
