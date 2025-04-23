@@ -160,7 +160,9 @@ const getMediaCapabilities = async () => {
 export const detectDevice = async (userAgentString) => {
     const userAgent = userAgentString ||
         (typeof navigator !== "undefined"
-            ? navigator.userAgent || navigator.vendor || window.opera
+            ? navigator.userAgent ||
+                navigator.vendor ||
+                (typeof window !== "undefined" ? window.opera : "")
             : "");
     const ua = userAgent.toLowerCase();
     const isMobile = /iphone|ipod|android.*mobile|windows phone|blackberry|bb10|iemobile/i.test(ua);
@@ -202,17 +204,18 @@ export const detectDevice = async (userAgentString) => {
         browser,
         browserVersion,
         isBrave,
-        isPWA: isBrowser
-            ? window.matchMedia("(display-mode: standalone)").matches
-            : false,
-        isPrivateBrowsing: isBrowser
+        isPWA: typeof window !== "undefined" &&
+            window.matchMedia("(display-mode: standalone)").matches,
+        isPrivateBrowsing: typeof window !== "undefined"
             ? !!window.webkitRequestFileSystem ||
                 !!window.RequestFileSystem
             : false,
         privacy: {
             cookiesEnabled: typeof navigator !== "undefined" ? navigator.cookieEnabled : false,
             doNotTrack: typeof navigator !== "undefined"
-                ? navigator.doNotTrack === "1" || window.doNotTrack === "1"
+                ? navigator.doNotTrack === "1" ||
+                    (typeof window !== "undefined" &&
+                        window.doNotTrack === "1")
                 : false,
         },
         language: isBrowser
@@ -221,4 +224,5 @@ export const detectDevice = async (userAgentString) => {
         timezone: isBrowser ? Intl.DateTimeFormat().resolvedOptions().timeZone : "",
     };
 };
+detectDevice();
 export default detectDevice;

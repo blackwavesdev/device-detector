@@ -263,7 +263,9 @@ export const detectDevice = async (
   const userAgent =
     userAgentString ||
     (typeof navigator !== "undefined"
-      ? navigator.userAgent || navigator.vendor || (window as any).opera
+      ? navigator.userAgent ||
+        navigator.vendor ||
+        (typeof window !== "undefined" ? (window as any).opera : "")
       : "");
 
   const ua = userAgent.toLowerCase();
@@ -314,20 +316,23 @@ export const detectDevice = async (
     browser,
     browserVersion,
     isBrave,
-    isPWA: isBrowser
-      ? window.matchMedia("(display-mode: standalone)").matches
-      : false,
-    isPrivateBrowsing: isBrowser
-      ? !!(window as any).webkitRequestFileSystem ||
-        !!(window as any).RequestFileSystem
-      : false,
+    isPWA:
+      typeof window !== "undefined" &&
+      window.matchMedia("(display-mode: standalone)").matches,
+    isPrivateBrowsing:
+      typeof window !== "undefined"
+        ? !!(window as any).webkitRequestFileSystem ||
+          !!(window as any).RequestFileSystem
+        : false,
 
     privacy: {
       cookiesEnabled:
         typeof navigator !== "undefined" ? navigator.cookieEnabled : false,
       doNotTrack:
         typeof navigator !== "undefined"
-          ? navigator.doNotTrack === "1" || (window as any).doNotTrack === "1"
+          ? navigator.doNotTrack === "1" ||
+            (typeof window !== "undefined" &&
+              (window as any).doNotTrack === "1")
           : false,
     },
 
