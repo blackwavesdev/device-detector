@@ -194,7 +194,7 @@ export const detectDevice = async (userAgentString) => {
     // Browser-only features
     const isBrowser = typeof window !== "undefined" && typeof navigator !== "undefined";
     // Get all browser-specific info
-    const screenInfo = await getScreenInfo();
+    const screenInfo = getScreenInfo();
     const hardwareInfo = getHardwareInfo();
     const networkInfo = getNetworkInfo();
     const mediaCapabilities = isBrowser
@@ -207,6 +207,18 @@ export const detectDevice = async (userAgentString) => {
         isDesktop,
         deviceType: isMobile ? "Mobile" : isTablet ? "Tablet" : "Desktop",
         userAgent,
+        networkInfo,
+        hardwareInfo,
+        deviceModel,
+        deviceVendor,
+        screen: {
+            width: screenInfo?.width || 0,
+            height: screenInfo?.height || 0,
+            resolution: screenInfo?.resolution || "",
+            colorDepth: screenInfo?.colorDepth || 0,
+            pixelRatio: screenInfo?.pixelRatio || 1,
+            orientation: "portrait",
+        },
         // screen: screenInfo,
         os,
         osVersion,

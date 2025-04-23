@@ -13,6 +13,23 @@ export type DeviceInfo = {
     os: OS;
     osVersion: string;
     platform: string;
+    deviceModel: string | null;
+    deviceVendor: string | null;
+    networkInfo?: {
+        type: ConnectionType;
+        effectiveType: EffectiveConnectionType;
+        downlink: number | null;
+        rtt: number | null;
+        saveData: boolean;
+    };
+    hardwareInfo?: {
+        cores: number;
+        memory: number | null;
+        model: string | null;
+        vendor: string | null;
+        webGLRenderer: string | null;
+        webGLVersion: string | null;
+    };
     browser: Browser;
     browserVersion: string;
     isBrave: boolean;
