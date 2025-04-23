@@ -1,5 +1,5 @@
 {
-  "name": "blackwaves-device-detector",
+  "name": "@blackwaves/device-detector",
   "version": "1.0.0",
   "description": "A simple library to detect device type (mobile, tablet, desktop), operating system, and browser.",
   "main": "./dist/index.js",
