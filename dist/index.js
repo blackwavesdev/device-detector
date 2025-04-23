@@ -31,7 +31,8 @@ const detectBrowser = (ua) => {
     let version = "";
     let isBrave = false;
     // Test for Brave first as it mimics Chrome
-    if (navigator.brave || /brave/i.test(ua)) {
+    if ((typeof navigator !== "undefined" && navigator.brave) ||
+        /brave/i.test(ua)) {
         browser = "Brave";
         isBrave = true;
     }
@@ -192,6 +193,13 @@ export const detectDevice = async (userAgentString) => {
     }
     // Browser-only features
     const isBrowser = typeof window !== "undefined" && typeof navigator !== "undefined";
+    // Get all browser-specific info
+    const screenInfo = getScreenInfo();
+    const hardwareInfo = getHardwareInfo();
+    const networkInfo = getNetworkInfo();
+    const mediaCapabilities = isBrowser
+        ? await getMediaCapabilities()
+        : undefined;
     return {
         isMobile,
         isTablet,
@@ -204,11 +212,13 @@ export const detectDevice = async (userAgentString) => {
         browser,
         browserVersion,
         isBrave,
-        isPWA: typeof window !== "undefined" &&
+        isPWA: isBrowser &&
+            typeof window !== "undefined" &&
             window.matchMedia("(display-mode: standalone)").matches,
-        isPrivateBrowsing: typeof window !== "undefined"
-            ? !!window.webkitRequestFileSystem ||
-                !!window.RequestFileSystem
+        isPrivateBrowsing: isBrowser
+            ? (typeof window !== "undefined" &&
+                !!window.webkitRequestFileSystem) ||
+                (typeof window !== "undefined" && !!window.RequestFileSystem)
             : false,
         privacy: {
             cookiesEnabled: typeof navigator !== "undefined" ? navigator.cookieEnabled : false,
@@ -224,5 +234,4 @@ export const detectDevice = async (userAgentString) => {
         timezone: isBrowser ? Intl.DateTimeFormat().resolvedOptions().timeZone : "",
     };
 };
-detectDevice();
 export default detectDevice;

@@ -124,7 +124,10 @@ const detectBrowser = (
   let isBrave = false;
 
   // Test for Brave first as it mimics Chrome
-  if ((navigator as any).brave || /brave/i.test(ua)) {
+  if (
+    (typeof navigator !== "undefined" && (navigator as any).brave) ||
+    /brave/i.test(ua)
+  ) {
     browser = "Brave";
     isBrave = true;
   } else if (/edg|edge|edga|edgios|edg/i.test(ua)) {
@@ -302,6 +305,14 @@ export const detectDevice = async (
   const isBrowser =
     typeof window !== "undefined" && typeof navigator !== "undefined";
 
+  // Get all browser-specific info
+  const screenInfo = getScreenInfo();
+  const hardwareInfo = getHardwareInfo();
+  const networkInfo = getNetworkInfo();
+  const mediaCapabilities = isBrowser
+    ? await getMediaCapabilities()
+    : undefined;
+
   return {
     isMobile,
     isTablet,
@@ -317,13 +328,14 @@ export const detectDevice = async (
     browserVersion,
     isBrave,
     isPWA:
+      isBrowser &&
       typeof window !== "undefined" &&
       window.matchMedia("(display-mode: standalone)").matches,
-    isPrivateBrowsing:
-      typeof window !== "undefined"
-        ? !!(window as any).webkitRequestFileSystem ||
-          !!(window as any).RequestFileSystem
-        : false,
+    isPrivateBrowsing: isBrowser
+      ? (typeof window !== "undefined" &&
+          !!(window as any).webkitRequestFileSystem) ||
+        (typeof window !== "undefined" && !!(window as any).RequestFileSystem)
+      : false,
 
     privacy: {
       cookiesEnabled:
