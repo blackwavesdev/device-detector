@@ -43,8 +43,8 @@ export type DeviceInfo = {
   isPWA: boolean;
   isPrivateBrowsing: boolean;
 
-  // Screen Info
-  screen: {
+  // Screen Info (Browser only)
+  screen?: {
     width: number;
     height: number;
     resolution: string;
@@ -53,8 +53,8 @@ export type DeviceInfo = {
     orientation: "portrait" | "landscape";
   };
 
-  // Hardware Info
-  hardware: {
+  // Hardware Info (Browser only)
+  hardware?: {
     cores: number;
     memory: number | null;
     model: string | null;
@@ -63,8 +63,8 @@ export type DeviceInfo = {
     webGLVersion: string | null;
   };
 
-  // Network Info
-  network: {
+  // Network Info (Browser only)
+  network?: {
     type: ConnectionType;
     effectiveType: EffectiveConnectionType;
     downlink: number | null;
@@ -72,14 +72,14 @@ export type DeviceInfo = {
     saveData: boolean;
   };
 
-  // Media Capabilities
-  media: {
+  // Media Capabilities (Browser only)
+  media?: {
     webpSupport: boolean;
     avifSupport: boolean;
   };
 
-  // Privacy
-  privacy: {
+  // Privacy (Browser only)
+  privacy?: {
     cookiesEnabled: boolean;
     doNotTrack: boolean;
   };
@@ -162,84 +162,99 @@ const detectBrowser = (
 };
 
 const getScreenInfo = () => {
+  if (typeof window === "undefined") return undefined;
+
   const width = window.screen.width;
   const height = window.screen.height;
-  const orientation: "landscape" | "portrait" =
-    width > height ? "landscape" : "portrait";
   return {
     width,
     height,
     resolution: `${width}x${height}`,
     colorDepth: window.screen.colorDepth,
     pixelRatio: window.devicePixelRatio || 1,
-    orientation,
+    orientation: width > height ? "landscape" : "portrait",
   };
 };
 
 const getHardwareInfo = () => {
-  const canvas = document.createElement("canvas");
-  const gl = (canvas.getContext("webgl") ||
-    canvas.getContext("experimental-webgl")) as WebGLRenderingContext | null;
-  let webGLRenderer = null;
-  let webGLVersion = null;
+  if (typeof document === "undefined") return undefined;
 
-  if (gl) {
-    try {
-      const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+  try {
+    const canvas = document.createElement("canvas");
+    const gl =
+      canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+    let webGLRenderer = null;
+    let webGLVersion = null;
+
+    if (gl) {
+      const glContext = gl as WebGLRenderingContext;
+      const debugInfo = glContext.getExtension("WEBGL_debug_renderer_info");
       webGLRenderer = debugInfo
-        ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
-        : gl.getParameter(gl.RENDERER);
-      webGLVersion = gl.getParameter(gl.VERSION);
-    } catch (e) {
-      console.warn("Could not get WebGL info:", e);
+        ? glContext.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
+        : glContext.getParameter(glContext.RENDERER);
+      webGLVersion = glContext.getParameter(glContext.VERSION);
     }
-  }
 
-  return {
-    cores: navigator.hardwareConcurrency || 0,
-    memory: (navigator as any).deviceMemory || null,
-    model: null, // Will be filled in detectDevice
-    vendor: null, // Will be filled in detectDevice
-    webGLRenderer,
-    webGLVersion,
-  };
+    return {
+      cores: navigator.hardwareConcurrency || 0,
+      memory: (navigator as any).deviceMemory || null,
+      model: null,
+      vendor: null,
+      webGLRenderer,
+      webGLVersion,
+    };
+  } catch (e) {
+    console.warn("Could not get hardware info:", e);
+    return undefined;
+  }
 };
 
 const getNetworkInfo = () => {
+  if (typeof navigator === "undefined") return undefined;
+
   const connection =
     (navigator as any).connection ||
     (navigator as any).mozConnection ||
     (navigator as any).webkitConnection;
-  return {
-    type: connection?.type || "unknown",
-    effectiveType: connection?.effectiveType || "unknown",
-    downlink: connection?.downlink || null,
-    rtt: connection?.rtt || null,
-    saveData: connection?.saveData || false,
-  };
+  return connection
+    ? {
+        type: connection.type || "unknown",
+        effectiveType: connection.effectiveType || "unknown",
+        downlink: connection.downlink || null,
+        rtt: connection.rtt || null,
+        saveData: connection.saveData || false,
+      }
+    : undefined;
 };
 
 const getMediaCapabilities = async () => {
-  const webpSupport = await new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(true);
-    img.onerror = () => resolve(false);
-    img.src =
-      "data:image/webp;base64,UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA";
-  });
+  if (typeof window === "undefined") return undefined;
 
-  const avifSupport = await new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(true);
-    img.onerror = () => resolve(false);
-    img.src =
-      "data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAAB0AAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAIAAAACAAAAEHBpeGkAAAAAAwgICAAAAAxhdjFDgQ0MAAAAABNjb2xybmNseAACAAIAAYAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAACVtZGF0EgAKCBgANogQEAwgMg8f8D///8WfhwB8+ErK42A=";
-  });
+  try {
+    const webpSupport = await new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+      img.src =
+        "data:image/webp;base64,UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA";
+    });
 
-  return {
-    webpSupport: webpSupport as boolean,
-    avifSupport: avifSupport as boolean,
-  };
+    const avifSupport = await new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+      img.src =
+        "data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAAB0AAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAIAAAACAAAAEHBpeGkAAAAAAwgICAAAAAxhdjFDgQ0MAAAAABNjb2xybmNseAACAAIAAYAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAACVtZGF0EgAKCBgANogQEAwgMg8f8D///8WfhwB8+ErK42A=";
+    });
+
+    return {
+      webpSupport: webpSupport as boolean,
+      avifSupport: avifSupport as boolean,
+    };
+  } catch (e) {
+    console.warn("Could not detect media capabilities:", e);
+    return undefined;
+  }
 };
 
 export const detectDevice = async (
@@ -281,49 +296,9 @@ export const detectDevice = async (
     deviceVendor = "Xiaomi";
   }
 
-  // Screen info
-  const screenInfo =
-    typeof window !== "undefined"
-      ? getScreenInfo()
-      : {
-          width: 0,
-          height: 0,
-          resolution: "0x0",
-          colorDepth: 0,
-          pixelRatio: 1,
-          orientation: "portrait" as "portrait",
-        };
-
-  // Hardware info
-  const hardwareInfo =
-    typeof navigator !== "undefined"
-      ? getHardwareInfo()
-      : {
-          cores: 0,
-          memory: null,
-          model: null,
-          vendor: null,
-          webGLRenderer: null,
-          webGLVersion: null,
-        };
-
-  // Network info
-  const networkInfo =
-    typeof navigator !== "undefined"
-      ? getNetworkInfo()
-      : {
-          type: "unknown",
-          effectiveType: "unknown",
-          downlink: null,
-          rtt: null,
-          saveData: false,
-        };
-
-  // Media capabilities
-  const mediaCapabilities =
-    typeof window !== "undefined"
-      ? await getMediaCapabilities()
-      : { webpSupport: false, avifSupport: false };
+  // Browser-only features
+  const isBrowser =
+    typeof window !== "undefined" && typeof navigator !== "undefined";
 
   return {
     isMobile,
@@ -334,24 +309,18 @@ export const detectDevice = async (
 
     os,
     osVersion,
-    platform: typeof navigator !== "undefined" ? navigator.platform : "",
+    platform: isBrowser ? navigator.platform : "",
 
     browser,
     browserVersion,
     isBrave,
-    isPWA: window.matchMedia("(display-mode: standalone)").matches,
-    isPrivateBrowsing:
-      !!(window as any).webkitRequestFileSystem ||
-      !!(window as any).RequestFileSystem,
-
-    screen: screenInfo,
-    hardware: {
-      ...hardwareInfo,
-      model: deviceModel,
-      vendor: deviceVendor,
-    },
-    network: networkInfo,
-    media: mediaCapabilities,
+    isPWA: isBrowser
+      ? window.matchMedia("(display-mode: standalone)").matches
+      : false,
+    isPrivateBrowsing: isBrowser
+      ? !!(window as any).webkitRequestFileSystem ||
+        !!(window as any).RequestFileSystem
+      : false,
 
     privacy: {
       cookiesEnabled:
@@ -362,16 +331,11 @@ export const detectDevice = async (
           : false,
     },
 
-    language:
-      typeof navigator !== "undefined"
-        ? navigator.language || (navigator as any).userLanguage || ""
-        : "",
-    timezone:
-      typeof Intl !== "undefined"
-        ? Intl.DateTimeFormat().resolvedOptions().timeZone
-        : "",
+    language: isBrowser
+      ? navigator.language || (navigator as any).userLanguage || ""
+      : "",
+    timezone: isBrowser ? Intl.DateTimeFormat().resolvedOptions().timeZone : "",
   };
 };
 
-// Export default for convenience
 export default detectDevice;

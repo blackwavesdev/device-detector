@@ -17,7 +17,7 @@ export type DeviceInfo = {
     isBrave: boolean;
     isPWA: boolean;
     isPrivateBrowsing: boolean;
-    screen: {
+    screen?: {
         width: number;
         height: number;
         resolution: string;
@@ -25,7 +25,7 @@ export type DeviceInfo = {
         pixelRatio: number;
         orientation: "portrait" | "landscape";
     };
-    hardware: {
+    hardware?: {
         cores: number;
         memory: number | null;
         model: string | null;
@@ -33,18 +33,18 @@ export type DeviceInfo = {
         webGLRenderer: string | null;
         webGLVersion: string | null;
     };
-    network: {
+    network?: {
         type: ConnectionType;
         effectiveType: EffectiveConnectionType;
         downlink: number | null;
         rtt: number | null;
         saveData: boolean;
     };
-    media: {
+    media?: {
         webpSupport: boolean;
         avifSupport: boolean;
     };
-    privacy: {
+    privacy?: {
         cookiesEnabled: boolean;
         doNotTrack: boolean;
     };
